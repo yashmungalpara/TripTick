@@ -1,2 +1,19 @@
-# TripTick
-TripTick is a secure and user-friendly Ticket Booking Management System designed to simplify the process of searching, booking, and managing tickets.
+# TripTick 🎟️
+
+**TripTick** is a simple and secure **Ticket Booking Management System** built using **Java**.
+It allows users to **register, log in, and book tickets**, demonstrating core Java and database concepts.
+
+## 🚀 Features
+
+* User Registration & Login
+* Ticket Booking & Reservation
+* View Booking Details
+* Database Connectivity (JDBC)
+* Exception Handling
+
+## 🛠️ Tech Stack
+
+* Html
+* Css
+* Js
+* json server 
