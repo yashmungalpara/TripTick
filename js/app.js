@@ -1,34 +1,76 @@
 
 import supabase from './supabaseClient.js'
+import Navbar from './components/Navbar.js'
+import Footer from './components/Footer.js'
+import Home from './pages/Home.js'
+import Login from './pages/Login.js'
+import Signup from './pages/Signup.js'
 
+// Initialize Fixed Components
+const navbarEl = document.getElementById('navbar-container');
+const footerEl = document.getElementById('footer-container');
+if (navbarEl) navbarEl.innerHTML = Navbar();
+if (footerEl) footerEl.innerHTML = Footer();
+
+// Router Logic
+// Router Logic
+const routes = {
+    '': { component: Home, layout: 'default' },
+    '#login': { component: Login, layout: 'auth' },
+    '#signup': { component: Signup, layout: 'auth' }
+};
+
+function renderPage() {
+    const mainContent = document.getElementById('main-content');
+    const navbarContainer = document.getElementById('navbar-container');
+    const footerContainer = document.getElementById('footer-container');
+
+    if (!mainContent) return;
+
+    const hash = window.location.hash || '';
+    const route = routes[hash] || routes['']; // Default to Home if route not found
+
+    // Handle Layouts
+    if (route.layout === 'auth') {
+        // Hide Navbar & Footer
+        if (navbarContainer) navbarContainer.style.display = 'none';
+        if (footerContainer) footerContainer.style.display = 'none';
+        // Remove top padding (used for fixed navbar)
+        mainContent.classList.remove('pt-[72px]');
+    } else {
+        // Show Navbar & Footer (Default)
+        if (navbarContainer) navbarContainer.style.display = 'block';
+        if (footerContainer) footerContainer.style.display = 'block';
+        // Add top padding back
+        mainContent.classList.add('pt-[72px]');
+    }
+
+    mainContent.innerHTML = route.component();
+    window.scrollTo(0, 0);
+}
+
+// Initial Render
+renderPage();
+
+// Listen for hash changes
+window.addEventListener('hashchange', renderPage);
+
+// Setup Mobile Menu Toggle (Simple implementation)
+const toggleBtn = document.querySelector('[data-collapse-toggle="navbar-sticky"]');
+const navbarMenu = document.getElementById('navbar-sticky');
+if (toggleBtn && navbarMenu) {
+    toggleBtn.addEventListener('click', () => {
+        navbarMenu.classList.toggle('hidden');
+    });
+}
+
+// Connection Check (Optional, keep for debugging)
 async function checkConnection() {
     try {
         const { data, error } = await supabase.from('test').select('*').limit(1);
-        // We expect an error if the table doesn't exist, but it confirms we reached Supabase.
-        // Or we can just check if the client is initialized.
-
-        console.log('Supabase Client Initialized:', supabase);
-
-        if (error && error.code !== 'PGRST204') { // PGRST204 is no content/table not found which might be expected if empty
-            console.log('Connection check (might verify valid key even if table missing):', error);
-        } else {
-            console.log('Supabase connection (probably) successful!');
-        }
-
-        const statusElement = document.getElementById('status');
-        if (statusElement) {
-            statusElement.textContent = 'Supabase Client Initialized. Check console for details.';
-            statusElement.classList.add('text-green-500');
-        }
-
+        console.log('Supabase check:', error ? error.message : 'Success');
     } catch (err) {
-        console.error('Unexpected error:', err);
-        const statusElement = document.getElementById('status');
-        if (statusElement) {
-            statusElement.textContent = 'Error Initializing Supabase. Check console.';
-            statusElement.classList.add('text-red-500');
-        }
+        console.error('Supabase check failed:', err);
     }
 }
-
 checkConnection();
