@@ -20,7 +20,7 @@ export default function Hero() {
                     <i class="fa-solid fa-location-dot text-white/70 mr-3"></i>
                     <div class="text-left w-full">
                         <label class="block text-xs text-white/70 uppercase">Where to next?</label>
-                        <input type="text" placeholder="Search destinations" class="w-full bg-transparent border-none text-white placeholder-gray-300 focus:ring-0 text-sm font-medium outline-none h-6">
+                        <input id="hero-search-input" type="text" placeholder="Search destinations" class="w-full bg-transparent border-none text-white placeholder-gray-300 focus:ring-0 text-sm font-medium outline-none h-6">
                     </div>
                 </div>
                 <div class="flex-1 flex items-center px-4 py-3 md:py-2 border-b md:border-b-0 md:border-r border-white/20">
@@ -37,7 +37,7 @@ export default function Hero() {
                         <input type="text" placeholder="Add guests" class="w-full bg-transparent border-none text-white placeholder-gray-300 focus:ring-0 text-sm font-medium outline-none h-6">
                     </div>
                 </div>
-                <button class="bg-white text-gray-900 hover:bg-gray-100 font-semibold rounded-full px-8 py-3 md:py-1 my-2 md:my-0 md:ml-2 transition shadow-md whitespace-nowrap">
+                <button onclick="window.searchTrips(document.getElementById('hero-search-input').value)" class="bg-white text-gray-900 hover:bg-gray-100 font-semibold rounded-full px-8 py-3 md:py-1 my-2 md:my-0 md:ml-2 transition shadow-md whitespace-nowrap">
                     Find my trip
                 </button>
             </div>

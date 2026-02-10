@@ -12,12 +12,22 @@ const footerEl = document.getElementById('footer-container');
 if (navbarEl) navbarEl.innerHTML = Navbar();
 if (footerEl) footerEl.innerHTML = Footer();
 
-// Router Logic
+import Booking from './pages/Booking.js'
+import Packages from './pages/Packages.js'
+import Contact from './pages/Contact.js'
+import Destinations from './pages/Destinations.js'
+
+// ... existing imports ...
+
 // Router Logic
 const routes = {
     '': { component: Home, layout: 'default' },
     '#login': { component: Login, layout: 'auth' },
-    '#signup': { component: Signup, layout: 'auth' }
+    '#signup': { component: Signup, layout: 'auth' },
+    '#booking': { component: Booking, layout: 'default' },
+    '#packages': { component: Packages, layout: 'default' },
+    '#contact': { component: Contact, layout: 'default' },
+    '#destinations': { component: Destinations, layout: 'default' }
 };
 
 function renderPage() {
@@ -27,8 +37,11 @@ function renderPage() {
 
     if (!mainContent) return;
 
-    const hash = window.location.hash || '';
-    const route = routes[hash] || routes['']; // Default to Home if route not found
+    // Handle hash with parameters (e.g. #booking?id=1)
+    const hashFull = window.location.hash || '';
+    const hashPath = hashFull.split('?')[0]; // Get base path
+
+    const route = routes[hashPath] || routes['']; // Default to Home if route not found
 
     // Handle Layouts
     if (route.layout === 'auth') {
@@ -47,6 +60,31 @@ function renderPage() {
 
     mainContent.innerHTML = route.component();
     window.scrollTo(0, 0);
+
+    // Update Navbar Active State
+    updateActiveNavbar(hashPath);
+}
+
+function updateActiveNavbar(hash) {
+    // Remove active class from all links
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+        // Reset the span width via inline style if needed, or rely on CSS class
+    });
+
+    // Map Routes to IDs
+    const navMap = {
+        '': 'nav-home',
+        '#destinations': 'nav-destinations',
+        '#packages': 'nav-packages',
+        '#contact': 'nav-contact'
+    };
+
+    const activeId = navMap[hash];
+    if (activeId) {
+        const activeLink = document.getElementById(activeId);
+        if (activeLink) activeLink.classList.add('active');
+    }
 }
 
 // Initial Render
