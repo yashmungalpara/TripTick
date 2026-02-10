@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TripTick - Admin Panel</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <!-- Chart.js for Dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 font-sans antialiased">
+    
+    <div id="admin-app" class="flex h-screen overflow-hidden">
+        <!-- Sidebar and Content will be injected here -->
+        <div id="loading" class="flex items-center justify-center w-full h-full">
+            <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+        </div>
+    </div>
+
+    <!-- Admin App Script -->
+    <script type="module" src="js/admin.js"></script>
+</body>
+</html>
