@@ -10,7 +10,7 @@ export default function Home() {
         <div id="home-page">
             ${Hero()}
             ${PopularTrips()}
-            ${Discover()}
+            ${Discover({ limit: 6, showFilters: false })}
             ${Moments()}
             ${ExtraSections()}
 

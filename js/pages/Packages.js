@@ -17,7 +17,7 @@ export default function Packages() {
 
     return `
         <div class="pt-10 min-h-screen bg-white">
-            ${Discover()}
+            ${Discover({ limit: null, showFilters: true })}
         </div>
     `;
 }

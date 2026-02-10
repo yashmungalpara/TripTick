@@ -1,4 +1,20 @@
-export default function Navbar() {
+export default function Navbar(user) {
+  // Auth Links Logic
+  const authLinks = user ? `
+        <a href="#profile" class="flex items-center gap-2 text-gray-700 hover:text-red-600 font-bold text-sm transition-colors">
+            <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                 <i class="fa-solid fa-user"></i>
+            </div>
+            <span class="hidden sm:inline">${user.user_metadata?.full_name || 'Profile'}</span>
+        </a>
+        <button id="logout-btn" class="text-white bg-gray-800 hover:bg-gray-900 focus:ring-4 focus:outline-none focus:ring-gray-300 font-bold rounded-full text-sm px-5 py-2.5 text-center shadow-lg transform hover:-translate-y-0.5 transition-all">
+            Logout
+        </button>
+  ` : `
+        <a href="#login" class="text-gray-600 hover:text-red-600 font-bold text-sm transition-colors hidden sm:block">Log in</a>
+        <a href="#signup" class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-bold rounded-full text-sm px-6 py-2.5 text-center shadow-lg hover:shadow-red-500/30 transform hover:-translate-y-0.5 transition-all">Sign Up</a>
+  `;
+
   return `
     <nav class="fixed w-full z-50 top-0 start-0 border-b border-gray-200 bg-white/90 backdrop-blur-md transition-all duration-300 shadow-sm" id="main-navbar">
       <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
@@ -10,8 +26,7 @@ export default function Navbar() {
         </a>
         
         <div class="flex md:order-2 space-x-3 md:space-x-4 rtl:space-x-reverse items-center">
-            <a href="#login" class="text-gray-600 hover:text-red-600 font-bold text-sm transition-colors hidden sm:block">Log in</a>
-            <a href="#signup" class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-bold rounded-full text-sm px-6 py-2.5 text-center shadow-lg hover:shadow-red-500/30 transform hover:-translate-y-0.5 transition-all">Sign Up</a>
+            ${authLinks}
             <button data-collapse-toggle="navbar-sticky" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200" aria-controls="navbar-sticky" aria-expanded="false">
               <span class="sr-only">Open main menu</span>
               <i class="fa-solid fa-bars text-xl"></i>

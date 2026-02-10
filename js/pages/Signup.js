@@ -1,6 +1,10 @@
 
+import supabase from '../supabaseClient.js'
+import { showToast } from '../components/Toast.js'
+
 export default function Signup() {
-    return `
+    return {
+        render: () => `
     <div class="flex min-h-screen font-sans">
         <!-- Left Side: Form -->
         <div class="w-full md:w-[55%] bg-white flex flex-col justify-center p-8 md:p-16 relative">
@@ -23,15 +27,15 @@ export default function Signup() {
                 
                 </div>
 
-                <form class="space-y-6" onsubmit="event.preventDefault(); window.location.hash = '#login'">
+                <form id="signup-form" class="space-y-6">
                     <!-- Name Input -->
                     <div class="relative group">
                         <div class="absolute inset-y-0 left-0 pl-0 flex items-center pointer-events-none">
                             <i class="far fa-user text-gray-400 text-lg group-focus-within:text-blue-500 transition-colors"></i>
                         </div>
-                        <input type="text" placeholder="Daniel Ahmadi" class="w-full py-4 pl-8 pr-10 border-b border-gray-200 text-gray-900 font-medium placeholder-gray-900 focus:outline-none focus:border-blue-600 transition-colors bg-transparent" required />
+                        <input type="text" id="signup-name" placeholder="Gbc Deg" class="w-full py-4 pl-8 pr-10 border-b border-gray-200 text-gray-900 font-extrabold tracking-widest placeholder-gray-400 focus:outline-none focus:border-blue-600 transition-colors bg-transparent" required />
                         <div class="absolute inset-y-0 right-0 flex items-center">
-                            <i class="fas fa-check-circle text-green-400"></i>
+                            <i class="fas fa-check-circle text-green-400 opacity-0 transition-opacity" id="name-check"></i>
                         </div>
                     </div>
 
@@ -40,9 +44,9 @@ export default function Signup() {
                         <div class="absolute inset-y-0 left-0 pl-0 flex items-center pointer-events-none">
                             <i class="far fa-envelope text-gray-400 text-lg group-focus-within:text-blue-500 transition-colors"></i>
                         </div>
-                        <input type="email" placeholder="11Danielahmadi@gmail.com" class="w-full py-4 pl-8 pr-10 border-b border-gray-200 text-gray-900 font-medium placeholder-gray-900 focus:outline-none focus:border-blue-600 transition-colors bg-transparent" required />
+                        <input type="email" id="signup-email" placeholder="abc@gmail.com" class="w-full py-4 pl-8 pr-10 border-b border-gray-200 text-gray-900 font-extrabold tracking-widest placeholder-gray-400 focus:outline-none focus:border-blue-600 transition-colors bg-transparent" required />
                         <div class="absolute inset-y-0 right-0 flex items-center">
-                            <i class="fas fa-check-circle text-green-400"></i>
+                            <i class="fas fa-check-circle text-green-400 opacity-0 transition-opacity" id="email-check"></i>
                         </div>
                     </div>
 
@@ -51,40 +55,38 @@ export default function Signup() {
                         <div class="absolute inset-y-0 left-0 pl-0 flex items-center pointer-events-none">
                             <i class="far fa-comment-dots text-gray-400 text-lg group-focus-within:text-blue-500 transition-colors"></i>
                         </div>
-                        <input type="password" value="......" class="w-full py-4 pl-8 pr-10 border-b border-gray-200 text-gray-900 font-extrabold tracking-widest placeholder-gray-400 focus:outline-none focus:border-blue-600 transition-colors bg-transparent" required />
-                        <button type="button" class="absolute inset-y-0 right-0 flex items-center text-gray-400 hover:text-gray-600">
+                        <input type="password" id="signup-password" placeholder="Password" class="w-full py-4 pl-8 pr-10 border-b border-gray-200 text-gray-900 font-extrabold tracking-widest placeholder-gray-400 focus:outline-none focus:border-blue-600 transition-colors bg-transparent" required />
+                        <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 flex items-center text-gray-400 hover:text-gray-600">
                             <i class="far fa-eye-slash"></i>
                         </button>
                     </div>
 
                     <!-- Requirements -->
                     <div class="space-y-2 pt-2">
-                         <div class="flex items-center text-xs text-gray-300">
-                            <span class="w-2 h-2 rounded-full bg-gray-200 mr-2"></span> Least 8 characters
+                         <div class="flex items-center text-xs text-gray-300" id="req-length">
+                            <span class="w-2 h-2 rounded-full bg-gray-200 mr-2 transition-colors"></span> Least 8 characters
                         </div>
-                        <div class="flex items-center text-xs text-green-500 font-medium">
-                            <i class="fas fa-check mr-2 text-[10px]"></i> Least one number (0-9) or a symbol
+                        <div class="flex items-center text-xs text-gray-300 font-medium" id="req-number">
+                            <i class="fas fa-check mr-2 text-[10px] opacity-0 transition-opacity"></i> Least one number (0-9) or a symbol
                         </div>
-                        <div class="flex items-center text-xs text-green-500 font-medium">
-                            <i class="fas fa-check mr-2 text-[10px]"></i> Lowercase (a-z) and uppercase (A-Z).
+                        <div class="flex items-center text-xs text-gray-300 font-medium" id="req-case">
+                            <i class="fas fa-check mr-2 text-[10px] opacity-0 transition-opacity"></i> Lowercase (a-z) and uppercase (A-Z).
                         </div>
                     </div>
                     
-                    <!-- Confirm Password Input (Style as "Re-Type Password") -->
+                    <!-- Confirm Password Input -->
                      <div class="relative group mt-4">
                         <div class="absolute inset-y-0 left-0 pl-0 flex items-center pointer-events-none">
                             <i class="fas fa-key text-gray-300 text-lg group-focus-within:text-blue-500 transition-colors"></i>
                         </div>
-                        <input type="password" placeholder="Re-Type Password" class="w-full py-4 pl-8 pr-10 border-b border-gray-200 text-gray-500 font-medium placeholder-gray-300 focus:outline-none focus:border-blue-600 transition-colors bg-transparent" />
+                        <input type="password" id="signup-confirm-password" placeholder="Re-Type Password" class="w-full py-4 pl-8 pr-10 border-b border-gray-200 text-gray-900 font-extrabold tracking-widest placeholder-gray-400 focus:outline-none focus:border-blue-600 transition-colors bg-transparent" required />
                     </div>
 
 
                     <div class="flex items-center justify-between pt-8">
-                        <button type="submit" class="bg-blue-600 text-white px-10 py-3 rounded-full font-medium shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition transform hover:-translate-y-0.5 flex items-center gap-2">
-                            Sign Up <i class="fas fa-arrow-right text-sm"></i>
+                        <button type="submit" id="signup-btn" class="bg-blue-600 text-white px-10 py-3 rounded-full font-medium shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition transform hover:-translate-y-0.5 flex items-center gap-2">
+                            <span>Sign Up</span> <i class="fas fa-arrow-right text-sm"></i>
                         </button>
-                        
-                      
                     </div>
                 </form>
             </div>
@@ -94,9 +96,7 @@ export default function Signup() {
         <div class="hidden md:flex md:w-[45%] bg-[#5865F2] relative overflow-hidden items-center justify-center">
              <!-- Abstract Shapes Background -->
             <div class="absolute top-0 right-0 w-full h-full">
-                 <!-- Darker Blue blob top right -->
                  <div class="absolute top-[-10%] right-[-10%] w-[80%] h-[70%] bg-[#404EED] rounded-bl-[100px] transform rotate-12 opacity-50"></div>
-                 <!-- Lighter Blue wave bottom left -->
                  <div class="absolute bottom-[-10%] left-[-20%] w-[100%] h-[60%] bg-[#4752C4] rounded-tr-[150px] transform -rotate-12 opacity-30"></div>
             </div>
 
@@ -108,7 +108,6 @@ export default function Signup() {
                      <div class="text-3xl font-bold text-gray-900 mt-1">176,18</div>
                      
                      <div class="mt-4 flex items-center justify-center relative h-12">
-                         <!-- Small Graph Mockup -->
                           <svg viewBox="0 0 100 40" class="w-full h-full overflow-visible">
                             <path d="M0,30 Q20,10 40,30 T80,20 T100,10" fill="none" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
                              <circle cx="50" cy="25" r="8" fill="#1F2937" />
@@ -165,5 +164,122 @@ export default function Signup() {
             }
         </style>
     </div>
-    `;
+    `,
+        afterRender: () => {
+            const form = document.getElementById('signup-form');
+            const emailInput = document.getElementById('signup-email');
+            const passwordInput = document.getElementById('signup-password');
+            const confirmPasswordInput = document.getElementById('signup-confirm-password');
+            const nameInput = document.getElementById('signup-name');
+            const btn = document.getElementById('signup-btn');
+
+            // Password Toggle (Signup)
+            const toggleBtn = document.getElementById('toggle-password');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function () {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    this.innerHTML = type === 'password' ? '<i class="far fa-eye-slash"></i>' : '<i class="far fa-eye"></i>';
+                });
+            }
+
+            // Password Validation (Visual)
+            if (passwordInput) {
+                passwordInput.addEventListener('input', () => {
+                    const val = passwordInput.value;
+                    const lengthReq = document.getElementById('req-length');
+                    const numberReq = document.getElementById('req-number');
+                    const caseReq = document.getElementById('req-case');
+
+                    if (!lengthReq || !numberReq || !caseReq) return;
+
+                    // Length
+                    if (val.length >= 8) {
+                        lengthReq.classList.replace('text-gray-300', 'text-green-500');
+                        lengthReq.querySelector('span')?.classList.replace('bg-gray-200', 'bg-green-500');
+                    } else {
+                        lengthReq.classList.replace('text-green-500', 'text-gray-300');
+                        lengthReq.querySelector('span')?.classList.replace('bg-green-500', 'bg-gray-200');
+                    }
+
+                    // Number/Symbol
+                    if (/[0-9!@#$%^&*]/.test(val)) {
+                        numberReq.classList.replace('text-gray-300', 'text-green-500');
+                        numberReq.querySelector('i')?.classList.remove('opacity-0');
+                    } else {
+                        numberReq.classList.replace('text-green-500', 'text-gray-300');
+                        numberReq.querySelector('i')?.classList.add('opacity-0');
+                    }
+
+                    // Case
+                    if (/[a-z]/.test(val) && /[A-Z]/.test(val)) {
+                        caseReq.classList.replace('text-gray-300', 'text-green-500');
+                        caseReq.querySelector('i')?.classList.remove('opacity-0');
+                    } else {
+                        caseReq.classList.replace('text-green-500', 'text-gray-300');
+                        caseReq.querySelector('i')?.classList.add('opacity-0');
+                    }
+                });
+            }
+
+            // Handle Submit
+            if (form) {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+
+                    const email = emailInput?.value;
+                    const password = passwordInput?.value;
+                    const confirmPassword = confirmPasswordInput?.value;
+                    const name = nameInput?.value;
+
+                    if (password !== confirmPassword) {
+                        showToast("Passwords do not match!", 'error');
+                        return;
+                    }
+
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                    }
+
+                    try {
+                        const { data, error } = await supabase.auth.signUp({
+                            email: email,
+                            password: password,
+                            options: {
+                                data: {
+                                    full_name: name
+                                }
+                            }
+                        });
+
+                        if (error) throw error;
+
+                        showToast("Signup Successful! Check your email for confirmation.", 'success');
+
+                        // Check if session is established immediately
+                        if (data.session) {
+                            setTimeout(() => {
+                                window.location.hash = ''; // Go to Home
+                            }, 1500);
+                        } else {
+                            // likely need email confirmation
+                            setTimeout(() => {
+                                window.location.hash = '#login';
+                            }, 3000);
+                        }
+
+                    } catch (err) {
+                        showToast(err.message || "An error occurred during signup.", 'error');
+                    } finally {
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.innerHTML = '<span>Sign Up</span> <i class="fas fa-arrow-right text-sm"></i>';
+                        }
+                    }
+                });
+            }
+        }
+    };
 }
+

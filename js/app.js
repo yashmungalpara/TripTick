@@ -5,25 +5,39 @@ import Footer from './components/Footer.js'
 import Home from './pages/Home.js'
 import Login from './pages/Login.js'
 import Signup from './pages/Signup.js'
+import Profile from './pages/Profile.js'
 
 // Initialize Fixed Components
-const navbarEl = document.getElementById('navbar-container');
-const footerEl = document.getElementById('footer-container');
-if (navbarEl) navbarEl.innerHTML = Navbar();
-if (footerEl) footerEl.innerHTML = Footer();
+const navbarContainer = document.getElementById('navbar-container');
+const footerContainer = document.getElementById('footer-container');
+
+// Helper to render Navbar with user data
+async function renderNavbar() {
+    if (!navbarContainer) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    navbarContainer.innerHTML = Navbar(user);
+    setupLogoutListener();
+}
+
+function renderFooter() {
+    if (footerContainer) footerContainer.innerHTML = Footer();
+}
+
+// Initial Render
+renderNavbar();
+renderFooter();
 
 import Booking from './pages/Booking.js'
 import Packages from './pages/Packages.js'
 import Contact from './pages/Contact.js'
 import Destinations from './pages/Destinations.js'
 
-// ... existing imports ...
-
 // Router Logic
 const routes = {
     '': { component: Home, layout: 'default' },
     '#login': { component: Login, layout: 'auth' },
     '#signup': { component: Signup, layout: 'auth' },
+    '#profile': { component: Profile, layout: 'default' },
     '#booking': { component: Booking, layout: 'default' },
     '#packages': { component: Packages, layout: 'default' },
     '#contact': { component: Contact, layout: 'default' },
@@ -32,8 +46,6 @@ const routes = {
 
 function renderPage() {
     const mainContent = document.getElementById('main-content');
-    const navbarContainer = document.getElementById('navbar-container');
-    const footerContainer = document.getElementById('footer-container');
 
     if (!mainContent) return;
 
@@ -58,7 +70,21 @@ function renderPage() {
         mainContent.classList.add('pt-[72px]');
     }
 
-    mainContent.innerHTML = route.component();
+    // Render Content
+    const componentOutput = route.component();
+
+    if (typeof componentOutput === 'string') {
+        // Legacy: Component returns just HTML string
+        mainContent.innerHTML = componentOutput;
+    } else if (typeof componentOutput === 'object' && componentOutput.render) {
+        // New: Component returns { render, afterRender }
+        mainContent.innerHTML = componentOutput.render();
+        if (componentOutput.afterRender) {
+            // Execute after DOM update
+            componentOutput.afterRender();
+        }
+    }
+
     window.scrollTo(0, 0);
 
     // Update Navbar Active State
@@ -69,7 +95,6 @@ function updateActiveNavbar(hash) {
     // Remove active class from all links
     document.querySelectorAll('.nav-link').forEach(link => {
         link.classList.remove('active');
-        // Reset the span width via inline style if needed, or rely on CSS class
     });
 
     // Map Routes to IDs
@@ -87,28 +112,74 @@ function updateActiveNavbar(hash) {
     }
 }
 
-// Initial Render
+// Initial Page Render
 renderPage();
 
 // Listen for hash changes
 window.addEventListener('hashchange', renderPage);
 
-// Setup Mobile Menu Toggle (Simple implementation)
-const toggleBtn = document.querySelector('[data-collapse-toggle="navbar-sticky"]');
-const navbarMenu = document.getElementById('navbar-sticky');
-if (toggleBtn && navbarMenu) {
-    toggleBtn.addEventListener('click', () => {
-        navbarMenu.classList.toggle('hidden');
-    });
-}
+// Listen for Auth Changes
+supabase.auth.onAuthStateChange((event, session) => {
+    // Re-render Navbar to show/hide Login/Profile buttons
+    const user = session ? session.user : null;
+    if (navbarContainer) navbarContainer.innerHTML = Navbar(user);
+    setupLogoutListener();
 
-// Connection Check (Optional, keep for debugging)
-async function checkConnection() {
-    try {
-        const { data, error } = await supabase.from('test').select('*').limit(1);
-        console.log('Supabase check:', error ? error.message : 'Success');
-    } catch (err) {
-        console.error('Supabase check failed:', err);
+
+    // Redirect if logging out while on profile
+    if (event === 'SIGNED_OUT') {
+        showToast('You have been logged out.', 'info');
+        if (window.location.hash === '#profile') {
+            window.location.hash = '#login';
+        }
+    }
+
+});
+
+// Helper to attach logout listener (since Navbar is re-rendered string)
+function setupLogoutListener() {
+    const logoutBtn = document.getElementById('logout-btn');
+
+    if (logoutBtn) {
+        // Remove old listener to avoid duplicates if re-rendering (simple way)
+        logoutBtn.replaceWith(logoutBtn.cloneNode(true));
+        const newBtn = document.getElementById('logout-btn');
+
+        newBtn.addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.hash = '';
+        });
+    }
+
+    // Also re-attach Mobile Menu Toggle
+    const toggleBtn = document.querySelector('[data-collapse-toggle="navbar-sticky"]');
+    const navbarMenu = document.getElementById('navbar-sticky');
+
+    if (toggleBtn && navbarMenu) {
+        // Clone to clear listeners
+        toggleBtn.replaceWith(toggleBtn.cloneNode(true));
+        const newToggle = document.querySelector('[data-collapse-toggle="navbar-sticky"]');
+
+        newToggle.addEventListener('click', () => {
+            navbarMenu.classList.toggle('hidden');
+        });
     }
 }
-checkConnection();
+
+
+import { showToast } from './components/Toast.js';
+
+// Global Booking Handler (Protected Route)
+window.handleBooking = async (tripId) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+        window.location.hash = `#booking?id=${tripId}`;
+    } else {
+        showToast('Please log in to book a trip!', 'error');
+        // Deliberately delay redirect slightly so user sees the toast
+        setTimeout(() => {
+            window.location.hash = '#login';
+        }, 1000);
+    }
+};
+

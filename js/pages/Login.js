@@ -1,6 +1,10 @@
 
+import supabase from '../supabaseClient.js'
+import { showToast } from '../components/Toast.js'
+
 export default function Login() {
-    return `
+    return {
+        render: () => `
     <div class="flex min-h-screen font-sans">
         <!-- Left Side: Form -->
         <div class="w-full md:w-[55%] bg-white flex flex-col justify-center p-8 md:p-16 relative">
@@ -22,16 +26,16 @@ export default function Login() {
                     <p class="text-gray-400 text-sm">Sign in to access your dashboard</p>
                 </div>
 
-                <form class="space-y-8" onsubmit="event.preventDefault(); window.location.hash = ''">
+                <form id="login-form" class="space-y-8">
 
                     <!-- Email Input -->
                     <div class="relative group">
                         <div class="absolute inset-y-0 left-0 pl-0 flex items-center pointer-events-none">
                             <i class="far fa-envelope text-gray-400 text-lg group-focus-within:text-blue-500 transition-colors"></i>
                         </div>
-                        <input type="email" placeholder="Email Address" class="w-full py-4 pl-8 pr-10 border-b border-gray-200 text-gray-900 font-medium placeholder-gray-900 focus:outline-none focus:border-blue-600 transition-colors bg-transparent" required />
+                        <input type="email" id="login-email" placeholder="Email Address" class="w-full py-4 pl-8 pr-10 border-b border-gray-200 text-gray-900 font-extrabold tracking-widest placeholder-gray-400 focus:outline-none focus:border-blue-600 transition-colors bg-transparent" required />
                         <div class="absolute inset-y-0 right-0 flex items-center">
-                            <i class="fas fa-check-circle text-green-400"></i>
+                            <i class="fas fa-check-circle text-green-400 opacity-0 transition-opacity" id="email-check"></i>
                         </div>
                     </div>
 
@@ -40,15 +44,15 @@ export default function Login() {
                         <div class="absolute inset-y-0 left-0 pl-0 flex items-center pointer-events-none">
                             <i class="fas fa-lock text-gray-400 text-lg group-focus-within:text-blue-500 transition-colors"></i>
                         </div>
-                        <input type="password" placeholder="Password" class="w-full py-4 pl-8 pr-10 border-b border-gray-200 text-gray-900 font-medium placeholder-gray-400 focus:outline-none focus:border-blue-600 transition-colors bg-transparent" required />
+                        <input type="password" id="login-password" placeholder="Password" class="w-full py-4 pl-8 pr-10 border-b border-gray-200 text-gray-900 font-extrabold tracking-widest placeholder-gray-400 focus:outline-none focus:border-blue-600 transition-colors bg-transparent" required />
                          <button type="button" class="absolute inset-y-0 right-0 flex items-center text-gray-400 hover:text-gray-600 text-xs font-semibold hover:text-blue-600">
                             Forgot?
                         </button>
                     </div>
 
                     <div class="flex items-center justify-between pt-4">
-                        <button type="submit" class="bg-blue-600 text-white px-10 py-3 rounded-full font-medium shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition transform hover:-translate-y-0.5 flex items-center gap-2">
-                            Sign In <i class="fas fa-arrow-right text-sm"></i>
+                        <button type="submit" id="login-btn" class="bg-blue-600 text-white px-10 py-3 rounded-full font-medium shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition transform hover:-translate-y-0.5 flex items-center gap-2">
+                            <span>Sign In</span> <i class="fas fa-arrow-right text-sm"></i>
                         </button>
                     </div>
                 </form>
@@ -96,5 +100,51 @@ export default function Login() {
             }
         </style>
     </div>
-    `;
+    `,
+        afterRender: () => {
+            const form = document.getElementById('login-form');
+            const emailInput = document.getElementById('login-email');
+            const passwordInput = document.getElementById('login-password');
+            const btn = document.getElementById('login-btn');
+
+            if (form) {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+
+                    const email = emailInput?.value;
+                    const password = passwordInput?.value;
+
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                    }
+
+                    try {
+                        const { data, error } = await supabase.auth.signInWithPassword({
+                            email: email,
+                            password: password
+                        });
+
+                        if (error) throw error;
+
+                        showToast('Welcome back!', 'success');
+
+                        // Redirect to Home
+                        setTimeout(() => {
+                            window.location.hash = ''; // Go to Home
+                        }, 1000);
+
+                    } catch (err) {
+                        showToast(err.message || "Invalid email or password.", 'error');
+                    } finally {
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.innerHTML = '<span>Sign In</span> <i class="fas fa-arrow-right text-sm"></i>';
+                        }
+                    }
+                });
+            }
+        }
+    };
 }
+
