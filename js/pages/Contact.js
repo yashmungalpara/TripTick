@@ -1,5 +1,8 @@
+import supabase from '../supabaseClient.js';
+
 export default function Contact() {
-    return `
+    return {
+        render: () => `
         <div class="bg-gray-50 min-h-screen">
             
             <!-- Hero Section -->
@@ -72,21 +75,21 @@ export default function Contact() {
                         <div class="bg-white rounded-2xl shadow-xl p-8 md:p-12 h-full">
                             <h2 class="text-3xl font-bold text-gray-900 mb-8">Send us a Message</h2>
                             
-                            <form onsubmit="event.preventDefault(); alert('Message Sent Successfully!');" class="space-y-6">
+                            <form id="contact-form" class="space-y-6">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 mb-2">Your Name</label>
-                                        <input type="text" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-4 outline-none transition" placeholder="John Doe" required>
+                                        <input type="text" name="name" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-4 outline-none transition" placeholder="John Doe" required>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 mb-2">Your Email</label>
-                                        <input type="email" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-4 outline-none transition" placeholder="john@example.com" required>
+                                        <input type="email" name="email" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-4 outline-none transition" placeholder="john@example.com" required>
                                     </div>
                                 </div>
 
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">Subject</label>
-                                    <select class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-4 outline-none transition">
+                                    <select name="subject" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-4 outline-none transition">
                                         <option>General Inquiry</option>
                                         <option>Trip Booking Issue</option>
                                         <option>Feedback</option>
@@ -96,10 +99,10 @@ export default function Contact() {
 
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">Message</label>
-                                    <textarea rows="6" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-4 outline-none transition resize-none" placeholder="Tell us how we can help..." required></textarea>
+                                    <textarea name="message" rows="6" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-4 outline-none transition resize-none" placeholder="Tell us how we can help..." required></textarea>
                                 </div>
 
-                                <button type="submit" class="w-full md:w-auto bg-black hover:bg-gray-800 text-white font-bold py-4 px-10 rounded-xl shadow-lg transform transition hover:-translate-y-1 text-lg flex items-center justify-center">
+                                <button type="submit" id="submit-btn" class="w-full md:w-auto bg-black hover:bg-gray-800 text-white font-bold py-4 px-10 rounded-xl shadow-lg transform transition hover:-translate-y-1 text-lg flex items-center justify-center">
                                     Send Message
                                     <i class="fa-solid fa-paper-plane ml-3 text-sm"></i>
                                 </button>
@@ -123,5 +126,42 @@ export default function Contact() {
 
             </div>
         </div>
-    `;
+    `,
+        afterRender: () => {
+            const form = document.getElementById('contact-form');
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const btn = document.getElementById('submit-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Sending...';
+                btn.disabled = true;
+
+                const formData = new FormData(form);
+                const messageData = {
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    subject: formData.get('subject'),
+                    message: formData.get('message'),
+                    status: 'unread'
+                };
+
+                const { error } = await supabase
+                    .from('messages')
+                    .insert([messageData]);
+
+                if (error) {
+                    console.error('Error sending message:', error);
+                    alert('Failed to send message. Please try again.');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                } else {
+                    alert('Message Sent Successfully!');
+                    form.reset();
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            });
+        }
+    };
 }

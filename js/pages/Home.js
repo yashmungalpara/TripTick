@@ -6,14 +6,20 @@ import ExtraSections from '../components/ExtraSections.js';
 
 
 export default function Home() {
-    return `
-        <div id="home-page">
-            ${Hero()}
-            ${PopularTrips()}
-            ${Discover({ limit: 6, showFilters: false })}
-            ${Moments()}
-            ${ExtraSections()}
-
-        </div>
-    `;
+    return {
+        render: () => `
+            <div id="home-page">
+                ${Hero()}
+                ${PopularTrips()}
+                ${Discover({ limit: 6, showFilters: false })}
+                ${Moments.render()}
+                ${ExtraSections()}
+            </div>
+        `,
+        afterRender: () => {
+            if (Moments.afterRender) {
+                Moments.afterRender();
+            }
+        }
+    };
 }

@@ -113,14 +113,23 @@ export default function Profile() {
                     return;
                 }
 
-                bookingsList.innerHTML = bookings.map(booking => `
-                    <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow border border-gray-100">
+                bookingsList.innerHTML = bookings.map(booking => {
+                    const travelDate = new Date(booking.travel_date);
+                    const now = new Date();
+                    // Calculate difference in hours
+                    const diffTime = travelDate - now;
+                    const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
+
+                    const isCancellable = diffHours >= 48 && booking.status !== 'cancelled';
+
+                    return `
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow border border-gray-100 relative">
                         <div class="flex flex-col sm:flex-row">
                             <!-- Image -->
                             <div class="sm:w-48 h-48 sm:h-auto relative">
                                 <img src="${booking.trips?.image || 'https://via.placeholder.com/150'}" alt="${booking.trips?.title}" class="w-full h-full object-cover">
                                 <div class="absolute top-2 left-2 bg-black/60 backdrop-blur text-white text-xs font-bold px-2 py-1 rounded">
-                                    ${new Date(booking.travel_date).toLocaleDateString()}
+                                    ${travelDate.toLocaleDateString()}
                                 </div>
                             </div>
 
@@ -129,7 +138,9 @@ export default function Profile() {
                                 <div>
                                     <div class="flex justify-between items-start mb-2">
                                         <h3 class="text-xl font-bold text-gray-900 leading-tight">${booking.trips?.title}</h3>
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'} capitalize">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                            booking.status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+                        } capitalize">
                                             ${booking.status}
                                         </span>
                                     </div>
@@ -140,14 +151,43 @@ export default function Profile() {
                                     <div class="text-sm text-gray-500">
                                         <span class="font-bold text-gray-900">${booking.guests}</span> Guests
                                     </div>
-                                    <div class="text-lg font-bold text-gray-900">
-                                        ${booking.total_price}
+                                    
+                                    <div class="flex items-center gap-4">
+                                        <div class="text-lg font-bold text-gray-900">
+                                            ${booking.total_price}
+                                        </div>
+                                        
+                                        ${isCancellable ? `
+                                            <button onclick="window.cancelBooking(${booking.id})" class="text-red-500 hover:text-red-700 text-sm font-semibold underline decoration-red-200 hover:decoration-red-700 transition">
+                                                Cancel Trip
+                                            </button>
+                                        ` : booking.status !== 'cancelled' ? `
+                                            <span class="text-gray-400 text-xs italic" title="Less than 48 hours to trip">Non-refundable</span>
+                                        ` : ''}
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                `).join('');
+                `}).join('');
+
+                // Expose cancel function globally
+                window.cancelBooking = async (bookingId) => {
+                    if (!confirm('Are you sure you want to cancel this trip? This action cannot be undone.')) return;
+
+                    const { error } = await supabase
+                        .from('bookings')
+                        .update({ status: 'cancelled' })
+                        .eq('id', bookingId);
+
+                    if (error) {
+                        alert('Error cancelling booking: ' + error.message);
+                    } else {
+                        // Refresh bookings
+                        fetchBookings(userId);
+                        // Optional: Show toast
+                    }
+                };
             }
         }
     };

@@ -123,7 +123,7 @@ export default function Booking() {
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                                         <div>
                                             <label class="block text-sm font-semibold text-gray-700 mb-2">Travel Date</label>
-                                            <input type="date" name="travelDate" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-red-500 focus:border-red-500 block p-3 outline-none transition" required>
+                                            <input type="date" id="travelDate" name="travelDate" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-red-500 focus:border-red-500 block p-3 outline-none transition" required>
                                             <p class="mt-1 text-xs text-gray-500">Suggested: ${trip.best_time || trip.bestTime}</p>
                                         </div>
                                         <div>
@@ -155,15 +155,35 @@ export default function Booking() {
             </div>
         `;
 
+        // Set Min Date to Today
+        const dateInput = document.getElementById('travelDate');
+        if (dateInput) {
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.setAttribute('min', today);
+        }
+
         // Handle Form Submission
         document.getElementById('booking-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const travelDate = formData.get('travelDate');
+
+            // Client-side Validation for Past Dates
+            const selectedDate = new Date(travelDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Reset time to midnight for fair comparison
+
+            if (selectedDate < today) {
+                showToast('Please select a valid future date.', 'error');
+                return;
+            }
+
             const btn = document.getElementById('submit-btn');
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Processing...';
             btn.disabled = true;
 
-            const formData = new FormData(e.target);
             const bookingData = {
                 trip_id: tripId,
                 user_id: user.id,
@@ -171,7 +191,7 @@ export default function Booking() {
                 last_name: formData.get('lastName'),
                 email: formData.get('email'),
                 phone: formData.get('phone'),
-                travel_date: formData.get('travelDate'),
+                travel_date: travelDate,
                 guests: parseInt(formData.get('guests')),
                 total_price: trip.price, // Ideally calculate based on guests, but simplifying for now
                 status: 'confirmed'
