@@ -4,10 +4,19 @@ import { showToast } from '../components/Toast.js';
 const Users = {
     render: async () => {
         // Fetch profiles
-        const { data: users, error } = await supabase
+        let query = supabase
             .from('profiles')
             .select('*')
             .order('created_at', { ascending: false });
+
+        const searchParams = new URLSearchParams(window.location.hash.split('?')[1]);
+        const roleFilter = searchParams.get('role') || 'all';
+
+        if (roleFilter !== 'all') {
+            query = query.eq('role', roleFilter);
+        }
+
+        const { data: users, error } = await query;
 
         if (error) {
             console.error('Error fetching users:', error);
@@ -56,7 +65,12 @@ const Users = {
         return `
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-3xl font-semibold text-gray-800">Users</h2>
-                 <div class="flex space-x-2">
+                 <div class="flex space-x-2 items-center">
+                    <select id="role-filter" class="bg-white border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2">
+                        <option value="all" ${roleFilter === 'all' ? 'selected' : ''}>All Roles</option>
+                        <option value="user" ${roleFilter === 'user' ? 'selected' : ''}>Users</option>
+                        <option value="admin" ${roleFilter === 'admin' ? 'selected' : ''}>Admins</option>
+                    </select>
                      <span class="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm text-gray-600 shadow-sm">
                         Total: <strong>${users.length}</strong>
                      </span>
@@ -108,6 +122,22 @@ const Users = {
                 }
             }
         };
+
+        // Filter Logic
+        const filterSelect = document.getElementById('role-filter');
+        if (filterSelect) {
+            filterSelect.addEventListener('change', (e) => {
+                const val = e.target.value;
+                window.location.hash = `#users?role=${val}`;
+                // Manually trigger re-render if hash change doesn't catch it immediately or to force refresh
+                // app.js mostly handles hashchange, but let's ensure smooth UX
+                import('../admin.js').then(module => {
+                    // The router in admin.js should handle hash change event. 
+                    // If not, we might need to dispatch event.
+                    window.dispatchEvent(new HashChangeEvent('hashchange'));
+                });
+            });
+        }
     }
 };
 

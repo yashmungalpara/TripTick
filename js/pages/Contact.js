@@ -1,8 +1,7 @@
 import supabase from '../supabaseClient.js';
 
-export default function Contact() {
-    return {
-        render: () => `
+const Contact = {
+    render: () => `
         <div class="bg-gray-50 min-h-screen">
             
             <!-- Hero Section -->
@@ -127,41 +126,53 @@ export default function Contact() {
             </div>
         </div>
     `,
-        afterRender: () => {
-            const form = document.getElementById('contact-form');
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
+    afterRender: () => {
+        const form = document.getElementById('contact-form');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            console.log('Form submitted');
 
-                const btn = document.getElementById('submit-btn');
-                const originalText = btn.innerHTML;
-                btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Sending...';
-                btn.disabled = true;
+            const btn = document.getElementById('submit-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Sending...';
+            btn.disabled = true;
 
-                const formData = new FormData(form);
-                const messageData = {
-                    name: formData.get('name'),
-                    email: formData.get('email'),
-                    subject: formData.get('subject'),
-                    message: formData.get('message'),
-                    status: 'unread'
-                };
+            const formData = new FormData(form);
+            const messageData = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                subject: formData.get('subject'),
+                message: formData.get('message'),
+                status: 'unread'
+            };
+            console.log('Sending data:', messageData);
 
-                const { error } = await supabase
-                    .from('messages')
-                    .insert([messageData]);
+            const { data, error } = await supabase
+                .from('messages')
+                .insert([messageData])
+                .select();
 
-                if (error) {
-                    console.error('Error sending message:', error);
-                    alert('Failed to send message. Please try again.');
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                } else {
-                    alert('Message Sent Successfully!');
+            console.log('Supabase response:', { data, error });
+
+            if (error) {
+                console.error('Error sending message:', error);
+                alert('Failed to send message: ' + error.message); // Show actual error
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            } else {
+                console.log('Message sent successfully', data);
+                alert('Message Sent Successfully!');
+                // form.reset(); // Keep form for now so user can see it worked
+                btn.innerHTML = 'Sent!';
+                setTimeout(() => {
                     form.reset();
                     btn.innerHTML = originalText;
                     btn.disabled = false;
-                }
-            });
-        }
-    };
-}
+                }, 2000);
+
+            }
+        });
+    }
+};
+
+export default Contact;

@@ -1,16 +1,21 @@
--- Enable UPDATE and DELETE for trips table
--- Currently, only SELECT and INSERT were enabled.
+-- ==========================================
+-- FIX: Relax Trip Permissions (Allow All Logged-in Users)
+-- ==========================================
 
--- Allow valid users to update trips
-create policy "Allow update for trips"
-  on trips for update
-  using ( true )  -- For now, allow everyone (or restrict to admin if prefer)
-  with check ( true );
+-- 1. Drop the strict Admin-Only policies
+DROP POLICY IF EXISTS "Admins can insert trips" ON trips;
+DROP POLICY IF EXISTS "Admins can update trips" ON trips;
+DROP POLICY IF EXISTS "Admins can delete trips" ON trips;
 
--- Allow valid users to delete trips
-create policy "Allow delete for trips"
-  on trips for delete
-  using ( true ); -- For now, allow everyone
+-- 2. Create new policies allowing ANY authenticated user to manage trips
+CREATE POLICY "Allow authenticated insert trips"
+ON trips FOR INSERT
+WITH CHECK (auth.role() = 'authenticated');
 
--- Ideally, you should restrict this to admins only:
--- using ( auth.uid() in (select id from profiles where role = 'admin') )
+CREATE POLICY "Allow authenticated update trips"
+ON trips FOR UPDATE
+USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Allow authenticated delete trips"
+ON trips FOR DELETE
+USING (auth.role() = 'authenticated');

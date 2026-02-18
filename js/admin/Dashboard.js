@@ -7,11 +7,15 @@ const Dashboard = {
         const [
             { count: tripsCount },
             { count: bookingsCount, data: bookings },
-            { count: usersCount, data: users }
+            { count: usersCount, data: users },
+            { count: feedbackCount, data: feedback },
+            { count: messagesCount, data: messages }
         ] = await Promise.all([
             supabase.from('trips').select('*', { count: 'exact', head: true }),
-            supabase.from('bookings').select('*, trips(title)').order('created_at', { ascending: false }),
-            supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(5)
+            supabase.from('bookings').select('*, trips(title)', { count: 'exact' }).order('created_at', { ascending: false }),
+            supabase.from('profiles').select('*', { count: 'exact' }).order('created_at', { ascending: false }).limit(5),
+            supabase.from('feedback').select('*', { count: 'exact' }).order('created_at', { ascending: false }).limit(5),
+            supabase.from('messages').select('*', { count: 'exact' }).order('created_at', { ascending: false }).limit(5)
         ]);
 
         // Calculate Revenue
@@ -25,9 +29,7 @@ const Dashboard = {
             }, 0);
         }
 
-        // Format Revenue (assuming predominantly one currency, using generic locale for now or hardcoded symbol if mixed)
-        // For this app, let's assume we want to show it nicely. 
-        // If data has mixed currencies, this is complex, but let's assume specific currency from data or default.
+        // Format Revenue
         const formattedRevenue = totalRevenue.toLocaleString('en-IN', {
             style: 'currency',
             currency: 'INR',
@@ -35,7 +37,6 @@ const Dashboard = {
         });
 
         // Prepare Recent Activity
-        // Combine recent bookings and new users, sort by date
         const activity = [];
         bookings?.slice(0, 5).forEach(b => {
             activity.push({
@@ -55,13 +56,30 @@ const Dashboard = {
                 color: 'text-blue-500'
             });
         });
+        feedback?.forEach(f => {
+            activity.push({
+                type: 'feedback',
+                text: `New feedback from "${f.name || 'Anonymous'}"`,
+                date: new Date(f.created_at),
+                icon: 'fa-comment-alt',
+                color: 'text-purple-500'
+            });
+        });
+        messages?.forEach(m => {
+            activity.push({
+                type: 'message',
+                text: `New message from "${m.name || 'Anonymous'}"`,
+                date: new Date(m.created_at),
+                icon: 'fa-envelope',
+                color: 'text-orange-500'
+            });
+        });
 
         // Sort and take top 5
         const recentActivity = activity.sort((a, b) => b.date - a.date).slice(0, 5);
 
-        // Prepare Chart Data (Bookings per month for current year)
+        // Prepare Chart Data
         const currentYear = new Date().getFullYear();
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const bookingsPerMonth = new Array(12).fill(0);
 
         bookings?.forEach(b => {
@@ -71,15 +89,15 @@ const Dashboard = {
             }
         });
 
-        // Store chart data globally or in a way accessible to afterRender
+        // Store chart data globally
         window.dashboardChartData = bookingsPerMonth;
 
         return `
             <h2 class="text-3xl font-semibold text-gray-800 mb-6">Dashboard Overview</h2>
             
             <!-- Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <!-- Card 1 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
+                <!-- Card 1: Revenue -->
                 <div class="bg-white rounded-lg p-6 shadow-md border-l-4 border-indigo-500 hover:shadow-lg transition-shadow">
                     <div class="flex items-center justify-between">
                         <div>
@@ -91,7 +109,7 @@ const Dashboard = {
                         </div>
                     </div>
                 </div>
-                <!-- Card 2 -->
+                <!-- Card 2: Bookings -->
                 <div class="bg-white rounded-lg p-6 shadow-md border-l-4 border-green-500 hover:shadow-lg transition-shadow">
                     <div class="flex items-center justify-between">
                         <div>
@@ -103,7 +121,7 @@ const Dashboard = {
                         </div>
                     </div>
                 </div>
-                <!-- Card 3 -->
+                <!-- Card 3: Trips -->
                 <div class="bg-white rounded-lg p-6 shadow-md border-l-4 border-blue-500 hover:shadow-lg transition-shadow">
                     <div class="flex items-center justify-between">
                         <div>
@@ -115,7 +133,7 @@ const Dashboard = {
                         </div>
                     </div>
                 </div>
-                <!-- Card 4 -->
+                <!-- Card 4: Users -->
                 <div class="bg-white rounded-lg p-6 shadow-md border-l-4 border-yellow-500 hover:shadow-lg transition-shadow">
                     <div class="flex items-center justify-between">
                         <div>
@@ -124,6 +142,30 @@ const Dashboard = {
                         </div>
                         <div class="p-3 bg-yellow-100 rounded-full text-yellow-500">
                             <i class="fas fa-users text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                 <!-- Card 5: Feedback -->
+                <div class="bg-white rounded-lg p-6 shadow-md border-l-4 border-purple-500 hover:shadow-lg transition-shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium uppercase">Total Feedback</p>
+                            <h3 class="text-2xl font-bold text-gray-800">${feedbackCount || 0}</h3>
+                        </div>
+                        <div class="p-3 bg-purple-100 rounded-full text-purple-500">
+                            <i class="fas fa-comments text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 6: Messages (New) -->
+                <div class="bg-white rounded-lg p-6 shadow-md border-l-4 border-orange-500 hover:shadow-lg transition-shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium uppercase">Messages</p>
+                            <h3 class="text-2xl font-bold text-gray-800">${messagesCount || 0}</h3>
+                        </div>
+                        <div class="p-3 bg-orange-100 rounded-full text-orange-500">
+                            <i class="fas fa-envelope text-xl"></i>
                         </div>
                     </div>
                 </div>

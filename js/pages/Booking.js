@@ -138,6 +138,11 @@ export default function Booking() {
                                         </div>
                                     </div>
 
+                                    <div class="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200 flex justify-between items-center">
+                                        <span class="text-gray-700 font-bold">Total Price:</span>
+                                        <span id="total-price-display" class="text-2xl font-black text-red-600">Calculating...</span>
+                                    </div>
+
                                     <div class="border-t border-gray-200 pt-6">
                                         <button type="submit" id="submit-btn" class="w-full md:w-auto bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-10 rounded-xl shadow-lg transform transition hover:-translate-y-0.5 focus:ring-4 focus:ring-red-300 text-lg flex items-center justify-center">
                                             Confirm Reservation
@@ -162,12 +167,54 @@ export default function Booking() {
             dateInput.setAttribute('min', today);
         }
 
+        // Price Calculation Logic
+        const guestsSelect = document.querySelector('select[name="guests"]');
+        const totalPriceEl = document.getElementById('total-price-display');
+        const basePriceStr = trip.price.replace(/[^0-9.]/g, ''); // Remove currency symbols
+        const basePrice = parseFloat(basePriceStr) || 0;
+
+        function updateTotalPrice() {
+            const guests = parseInt(guestsSelect.value) || 1;
+            const total = basePrice * guests;
+            // Format back to currency (assuming input was like $1200, we keep '$')
+            // For now, let's just use the same format as input if possible, or simple USD/INR
+            const currencySymbol = trip.price.includes('₹') ? '₹' : '$';
+            if (totalPriceEl) {
+                totalPriceEl.textContent = `${currencySymbol}${total.toLocaleString()}`;
+            }
+            return total; // Return for use in submission
+        }
+
+        // Initialize Price
+        if (guestsSelect && totalPriceEl) {
+            updateTotalPrice();
+            guestsSelect.addEventListener('change', updateTotalPrice);
+        }
+
+        // Toggle Payment Details Visibility
+        const paymentRadios = document.querySelectorAll('input[name="paymentMethod"]');
+        const cardDetails = document.getElementById('card-details');
+        const upiDetails = document.getElementById('upi-details');
+
+        function togglePaymentDetails() {
+            const selected = document.querySelector('input[name="paymentMethod"]:checked').value;
+            if (cardDetails) cardDetails.classList.add('hidden');
+            if (upiDetails) upiDetails.classList.add('hidden');
+
+            if (selected === 'card' && cardDetails) cardDetails.classList.remove('hidden');
+            if (selected === 'upi' && upiDetails) upiDetails.classList.remove('hidden');
+        }
+
+        paymentRadios.forEach(radio => radio.addEventListener('change', togglePaymentDetails));
+
+
         // Handle Form Submission
         document.getElementById('booking-form').addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const formData = new FormData(e.target);
             const travelDate = formData.get('travelDate');
+            const paymentMethod = formData.get('paymentMethod');
 
             // Client-side Validation for Past Dates
             const selectedDate = new Date(travelDate);
@@ -181,8 +228,26 @@ export default function Booking() {
 
             const btn = document.getElementById('submit-btn');
             const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Processing...';
+
+            // Payment Simulation
+            if (paymentMethod === 'card' || paymentMethod === 'upi') {
+                btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Processing Payment...';
+            } else {
+                btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Confirming...';
+            }
             btn.disabled = true;
+
+            // Simulate Network Delay for Payment
+            if (paymentMethod !== 'hotel') {
+                await new Promise(resolve => setTimeout(resolve, 2000)); // 2 second delay
+                showToast('Payment Successful!', 'success');
+                await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second showing success
+            }
+
+            const guests = parseInt(formData.get('guests'));
+            const calculatedTotal = basePrice * guests;
+            const currencySymbol = trip.price.includes('₹') ? '₹' : '$';
+            const finalPriceString = `${currencySymbol}${calculatedTotal.toLocaleString()}`;
 
             const bookingData = {
                 trip_id: tripId,
@@ -192,8 +257,8 @@ export default function Booking() {
                 email: formData.get('email'),
                 phone: formData.get('phone'),
                 travel_date: travelDate,
-                guests: parseInt(formData.get('guests')),
-                total_price: trip.price, // Ideally calculate based on guests, but simplifying for now
+                guests: guests,
+                total_price: finalPriceString,
                 status: 'confirmed'
             };
 

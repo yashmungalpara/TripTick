@@ -15,7 +15,20 @@ const footerContainer = document.getElementById('footer-container');
 async function renderNavbar() {
     if (!navbarContainer) return;
     const { data: { user } } = await supabase.auth.getUser();
-    navbarContainer.innerHTML = Navbar(user);
+
+    let isAdmin = false;
+    if (user) {
+        // Check if user is admin
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+
+        isAdmin = profile?.role === 'admin';
+    }
+
+    navbarContainer.innerHTML = Navbar(user, isAdmin);
     setupLogoutListener();
 }
 

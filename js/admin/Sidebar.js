@@ -29,6 +29,18 @@ export default function Sidebar() {
                     <span class="text-sm font-medium">Users</span>
                 </a>
             </li>
+            <li>
+                <a href="#messages" class="admin-nav-link flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-300 hover:text-white hover:bg-gray-700 pr-6">
+                    <span class="inline-flex items-center justify-center h-12 w-12 text-lg text-gray-400"><i class="fas fa-envelope"></i></span>
+                    <span class="text-sm font-medium">Messages</span>
+                </a>
+            </li>
+            <li>
+                <a href="#feedback" class="admin-nav-link flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-300 hover:text-white hover:bg-gray-700 pr-6">
+                    <span class="inline-flex items-center justify-center h-12 w-12 text-lg text-gray-400"><i class="fas fa-comment-alt"></i></span>
+                    <span class="text-sm font-medium">Feedback</span>
+                </a>
+            </li>
              <li>
                 <a href="index.html" class="flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-300 hover:text-white hover:bg-gray-700 pr-6">
                     <span class="inline-flex items-center justify-center h-12 w-12 text-lg text-gray-400"><i class="fas fa-sign-out-alt"></i></span>

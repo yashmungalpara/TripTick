@@ -1,6 +1,16 @@
-export default function Navbar(user) {
+export default function Navbar(user, isAdmin) {
   // Auth Links Logic
+  const adminLink = isAdmin ? `
+        <a href="admin.html" class="flex items-center gap-2 text-gray-700 hover:text-red-600 font-bold text-sm transition-colors mr-3">
+            <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-white">
+                 <i class="fa-solid fa-lock"></i>
+            </div>
+            <span class="hidden sm:inline">Admin</span>
+        </a>
+  ` : '';
+
   const authLinks = user ? `
+        ${adminLink}
         <a href="#profile" class="flex items-center gap-2 text-gray-700 hover:text-red-600 font-bold text-sm transition-colors">
             <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600">
                  <i class="fa-solid fa-user"></i>
@@ -19,9 +29,7 @@ export default function Navbar(user) {
     <nav class="fixed w-full z-50 top-0 start-0 border-b border-gray-200 bg-white/90 backdrop-blur-md transition-all duration-300 shadow-sm" id="main-navbar">
       <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         <a href="#" class="flex items-center space-x-2 rtl:space-x-reverse group">
-            <div class="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center text-white transform group-hover:rotate-12 transition">
-                <i class="fa-solid fa-paper-plane text-sm"></i>
-            </div>
+            <img src="assests/1771417406756-removebg-preview.png" class="h-24 w-auto" alt="TripTick Logo" />
             <span class="self-center text-2xl font-black whitespace-nowrap text-gray-900 tracking-tight">Trip<span class="text-red-600">Tick</span></span>
         </a>
         

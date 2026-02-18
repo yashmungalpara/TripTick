@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TripTick Debugger</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+        import { SUPABASE_URL, SUPABASE_ANON_KEY } from './js/config.js'
+
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+        const logDiv = document.getElementById('logs');
+
+        function log(msg, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `p-2 mb-2 rounded ${type === 'error' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'} font-mono text-sm`;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            logDiv.appendChild(div);
+        }
+
+        async function runDebug() {
+            log('Starting Debug Process...');
+
+            // 1. Check Connection / Table Exists by just selecting count
+            log('Step 1: Checking connection and table existence...');
+            const { count, error: countError } = await supabase
+                .from('messages')
+                .select('*', { count: 'exact', head: true });
+
+            if (countError) {
+                log(`Connection Failed: ${countError.message} (Code: ${countError.code})`, 'error');
+                log('Suggestion: Did you run the SQL script? Does the "messages" table exist?');
+                return;
+            }
+            log(`Connection Success. "messages" table has ${count} rows.`);
+
+            // 2. Try Insert
+            log('Step 2: Attempting to INSERT a test message...');
+            const testMsg = {
+                name: 'Debug Bot',
+                email: 'debug@test.com',
+                subject: 'Test Connection',
+                message: 'This is a test message from the debugger.',
+                status: 'unread'
+            };
+
+            const { data: insertData, error: insertError } = await supabase
+                .from('messages')
+                .insert([testMsg])
+                .select();
+
+            if (insertError) {
+                log(`INSERT Failed: ${insertError.message} (Code: ${insertError.code})`, 'error');
+                log('Suggestion: Check RLS policies. Do you have "Enable Public Insert"?');
+                return;
+            }
+            const insertedId = insertData && insertData[0] ? insertData[0].id : 'unknown';
+            log(`INSERT Success. New ID: ${insertedId}`);
+
+            // 3. Try Read Back
+            log('Step 3: Attempting to READ back the messages...');
+            const { data: readData, error: readError } = await supabase
+                .from('messages')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(5);
+
+            if (readError) {
+                log(`READ Failed: ${readError.message}`, 'error');
+                return;
+            }
+
+            if (readData.length === 0) {
+                log('READ Success, but returned 0 rows. (We just inserted one, so this is weird!)', 'error');
+                log('Possibility: RLS Policy allows INSERT but blocks SELECT for anonymous users?');
+            } else {
+                log(`READ Success. Verified ${readData.length} rows retrieved.`);
+                log(`Found our test message? ${readData.some(m => m.email === 'debug@test.com') ? 'YES' : 'NO'}`);
+            }
+
+            log('Debug Complete. If all steps are Green, the App should work.');
+        }
+
+        window.runDebug = runDebug;
+    </script>
+</head>
+
+<body class="bg-white p-8">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-2xl font-bold mb-4">Database Debugger</h1>
+        <p class="mb-6 text-gray-600">Click the button below to text the Supabase connection, table existence, and
+            permissions.</p>
+
+        <button onclick="runDebug()" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-bold mb-6">
+            Run Diagnostics
+        </button>
+
+        <div id="logs" class="border rounded p-4 min-h-[300px] bg-gray-50"></div>
+    </div>
+</body>
+
+</html>
