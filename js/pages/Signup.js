@@ -33,7 +33,7 @@ export default function Signup() {
                         <div class="absolute inset-y-0 left-0 pl-0 flex items-center pointer-events-none">
                             <i class="far fa-user text-gray-400 text-lg group-focus-within:text-blue-500 transition-colors"></i>
                         </div>
-                        <input type="text" id="signup-name" placeholder="Gbc Deg" class="w-full py-4 pl-8 pr-10 border-b border-gray-200 text-gray-900 font-extrabold tracking-widest placeholder-gray-400 focus:outline-none focus:border-blue-600 transition-colors bg-transparent" required />
+                        <input type="text" id="signup-name" placeholder="Enter your full name" class="w-full py-4 pl-8 pr-10 border-b border-gray-200 text-gray-900 font-extrabold tracking-widest placeholder-gray-400 focus:outline-none focus:border-blue-600 transition-colors bg-transparent" required />
                         <div class="absolute inset-y-0 right-0 flex items-center">
                             <i class="fas fa-check-circle text-green-400 opacity-0 transition-opacity" id="name-check"></i>
                         </div>
@@ -44,7 +44,7 @@ export default function Signup() {
                         <div class="absolute inset-y-0 left-0 pl-0 flex items-center pointer-events-none">
                             <i class="far fa-envelope text-gray-400 text-lg group-focus-within:text-blue-500 transition-colors"></i>
                         </div>
-                        <input type="email" id="signup-email" placeholder="abc@gmail.com" class="w-full py-4 pl-8 pr-10 border-b border-gray-200 text-gray-900 font-extrabold tracking-widest placeholder-gray-400 focus:outline-none focus:border-blue-600 transition-colors bg-transparent" required />
+                        <input type="email" id="signup-email" placeholder="Enter your email address" class="w-full py-4 pl-8 pr-10 border-b border-gray-200 text-gray-900 font-extrabold tracking-widest placeholder-gray-400 focus:outline-none focus:border-blue-600 transition-colors bg-transparent" required />
                         <div class="absolute inset-y-0 right-0 flex items-center">
                             <i class="fas fa-check-circle text-green-400 opacity-0 transition-opacity" id="email-check"></i>
                         </div>
@@ -55,7 +55,7 @@ export default function Signup() {
                         <div class="absolute inset-y-0 left-0 pl-0 flex items-center pointer-events-none">
                             <i class="far fa-comment-dots text-gray-400 text-lg group-focus-within:text-blue-500 transition-colors"></i>
                         </div>
-                        <input type="password" id="signup-password" placeholder="Password" class="w-full py-4 pl-8 pr-10 border-b border-gray-200 text-gray-900 font-extrabold tracking-widest placeholder-gray-400 focus:outline-none focus:border-blue-600 transition-colors bg-transparent" required />
+                        <input type="password" id="signup-password" placeholder="Create a password" class="w-full py-4 pl-8 pr-10 border-b border-gray-200 text-gray-900 font-extrabold tracking-widest placeholder-gray-400 focus:outline-none focus:border-blue-600 transition-colors bg-transparent" required />
                         <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 flex items-center text-gray-400 hover:text-gray-600">
                             <i class="far fa-eye-slash"></i>
                         </button>
@@ -64,10 +64,10 @@ export default function Signup() {
                     <!-- Requirements -->
                     <div class="space-y-2 pt-2">
                          <div class="flex items-center text-xs text-gray-300" id="req-length">
-                            <span class="w-2 h-2 rounded-full bg-gray-200 mr-2 transition-colors"></span> Least 8 characters
+                            <span class="w-2 h-2 rounded-full bg-gray-200 mr-2 transition-colors"></span> Checked 8 characters
                         </div>
                         <div class="flex items-center text-xs text-gray-300 font-medium" id="req-number">
-                            <i class="fas fa-check mr-2 text-[10px] opacity-0 transition-opacity"></i> Least one number (0-9) or a symbol
+                            <i class="fas fa-check mr-2 text-[10px] opacity-0 transition-opacity"></i> Checked one number (0-9) or a symbol
                         </div>
                         <div class="flex items-center text-xs text-gray-300 font-medium" id="req-case">
                             <i class="fas fa-check mr-2 text-[10px] opacity-0 transition-opacity"></i> Lowercase (a-z) and uppercase (A-Z).
@@ -79,7 +79,7 @@ export default function Signup() {
                         <div class="absolute inset-y-0 left-0 pl-0 flex items-center pointer-events-none">
                             <i class="fas fa-key text-gray-300 text-lg group-focus-within:text-blue-500 transition-colors"></i>
                         </div>
-                        <input type="password" id="signup-confirm-password" placeholder="Re-Type Password" class="w-full py-4 pl-8 pr-10 border-b border-gray-200 text-gray-900 font-extrabold tracking-widest placeholder-gray-400 focus:outline-none focus:border-blue-600 transition-colors bg-transparent" required />
+                        <input type="password" id="signup-confirm-password" placeholder="Confirm your password" class="w-full py-4 pl-8 pr-10 border-b border-gray-200 text-gray-900 font-extrabold tracking-widest placeholder-gray-400 focus:outline-none focus:border-blue-600 transition-colors bg-transparent" required />
                     </div>
 
 
@@ -183,6 +183,24 @@ export default function Signup() {
                 });
             }
 
+            // --- Email Validation ---
+            if (emailInput) {
+                emailInput.addEventListener('input', () => {
+                    const val = emailInput.value;
+                    const emailCheck = document.getElementById('email-check');
+                    // Simple Email Regex
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                    if (emailCheck) {
+                        if (emailRegex.test(val)) {
+                            emailCheck.classList.remove('opacity-0');
+                        } else {
+                            emailCheck.classList.add('opacity-0');
+                        }
+                    }
+                });
+            }
+
             // Password Validation (Visual)
             if (passwordInput) {
                 passwordInput.addEventListener('input', () => {
@@ -255,19 +273,12 @@ export default function Signup() {
 
                         if (error) throw error;
 
-                        showToast("Signup Successful! Check your email for confirmation.", 'success');
+                        showToast("Signup Successful! Please sign in.", 'success');
 
-                        // Check if session is established immediately
-                        if (data.session) {
-                            setTimeout(() => {
-                                window.location.hash = ''; // Go to Home
-                            }, 1500);
-                        } else {
-                            // likely need email confirmation
-                            setTimeout(() => {
-                                window.location.hash = '#login';
-                            }, 3000);
-                        }
+                        // Always redirect to Login page as requested
+                        setTimeout(() => {
+                            window.location.hash = '#login';
+                        }, 1500);
 
                     } catch (err) {
                         showToast(err.message || "An error occurred during signup.", 'error');

@@ -3,7 +3,7 @@ import { showToast } from '../components/Toast.js';
 
 const Users = {
     render: async () => {
-        // Fetch profiles
+        // Fetch users from profiles table
         let query = supabase
             .from('profiles')
             .select('*')
@@ -109,9 +109,7 @@ const Users = {
             const confirmed = await showConfirm('Are you sure you want to delete this user? This will also remove their profile data.', 'Delete User');
 
             if (confirmed) {
-                // Determine if we are deleting from 'profiles' (public table) or something else.
-                // Since this is client-side, we can only safely delete from 'profiles'.
-                // If the user has bookings, we might need to cascade delete (or DB handles it).
+                // Delete from profiles
                 const { error } = await supabase.from('profiles').delete().eq('id', id);
 
                 if (error) {

@@ -1,7 +1,8 @@
 import supabase from '../supabaseClient.js';
 
-const Contact = {
-    render: () => `
+const Contact = () => {
+    return {
+        render: () => `
         <div class="bg-gray-50 min-h-screen">
             
             <!-- Hero Section -->
@@ -126,53 +127,83 @@ const Contact = {
             </div>
         </div>
     `,
-    afterRender: () => {
-        const form = document.getElementById('contact-form');
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            console.log('Form submitted');
+        afterRender: () => {
+            // Handle Pre-filled Subject/Message from URL Query Params
+            const hash = window.location.hash;
+            if (hash.includes('?')) {
+                const queryParams = new URLSearchParams(hash.split('?')[1]);
+                const prefilledMessage = queryParams.get('message');
+                const prefilledSubject = queryParams.get('subject');
 
-            const btn = document.getElementById('submit-btn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Sending...';
-            btn.disabled = true;
+                if (prefilledMessage) {
+                    const messageBox = document.querySelector('textarea[name="message"]');
+                    if (messageBox) messageBox.value = prefilledMessage;
+                }
 
-            const formData = new FormData(form);
-            const messageData = {
-                name: formData.get('name'),
-                email: formData.get('email'),
-                subject: formData.get('subject'),
-                message: formData.get('message'),
-                status: 'unread'
-            };
-            console.log('Sending data:', messageData);
+                if (prefilledSubject) {
+                    const subjectSelect = document.querySelector('select[name="subject"]');
+                    if (subjectSelect) {
+                        // Loop through options to find a match (partial or exact) or default
+                        // For now, if provided subject matches one of the options roughly, select it.
+                        // But the options are specific. Let's just default to 'General Inquiry' if nothing specific matches,
+                        // or try to match the value.
+                        // Since our links don't send subject, this is future proofing.
+                        // Let's just leave it alone unless specifically requested.
+                        // Actually, let's select "General Inquiry" just in case users click from FAQ
+                        subjectSelect.value = "General Inquiry";
+                    }
+                }
+            }
 
-            const { data, error } = await supabase
-                .from('messages')
-                .insert([messageData])
-                .select();
+            const form = document.getElementById('contact-form');
+            if (!form) return;
 
-            console.log('Supabase response:', { data, error });
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                console.log('Form submitted');
 
-            if (error) {
-                console.error('Error sending message:', error);
-                alert('Failed to send message: ' + error.message); // Show actual error
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            } else {
-                console.log('Message sent successfully', data);
-                alert('Message Sent Successfully!');
-                // form.reset(); // Keep form for now so user can see it worked
-                btn.innerHTML = 'Sent!';
-                setTimeout(() => {
-                    form.reset();
+                const btn = document.getElementById('submit-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Sending...';
+                btn.disabled = true;
+
+                const formData = new FormData(form);
+                const messageData = {
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    subject: formData.get('subject'),
+                    message: formData.get('message'),
+                    status: 'unread'
+                };
+                console.log('Sending data:', messageData);
+
+                const { data, error } = await supabase
+                    .from('messages')
+                    .insert([messageData])
+                    .select();
+
+                console.log('Supabase response:', { data, error });
+
+                if (error) {
+                    console.error('Error sending message:', error);
+                    alert('Failed to send message: ' + error.message); // Show actual error
                     btn.innerHTML = originalText;
                     btn.disabled = false;
-                }, 2000);
+                } else {
+                    console.log('Message sent successfully', data);
+                    alert('Message Sent Successfully!');
+                    // form.reset(); // Keep form for now so user can see it worked
+                    btn.innerHTML = 'Sent!';
+                    setTimeout(() => {
+                        form.reset();
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }, 2000);
 
-            }
-        });
-    }
+                }
+            });
+        }
+    };
 };
 
 export default Contact;

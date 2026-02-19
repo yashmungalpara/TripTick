@@ -96,22 +96,23 @@ export default function Booking() {
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                         <div>
                                             <label class="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
-                                            <input type="text" name="firstName" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-red-500 focus:border-red-500 block p-3 outline-none transition" placeholder="John" required value="${user?.user_metadata?.firstName || ''}">
+                                            <input type="text" name="firstName" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-red-500 focus:border-red-500 block p-3 outline-none transition" placeholder="Enter First Name" required value="${user?.user_metadata?.firstName || ''}">
                                         </div>
                                         <div>
                                             <label class="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
-                                            <input type="text" name="lastName" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-red-500 focus:border-red-500 block p-3 outline-none transition" placeholder="Doe" required value="${user?.user_metadata?.lastName || ''}">
+                                            <input type="text" name="lastName" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-red-500 focus:border-red-500 block p-3 outline-none transition" placeholder="Enter Last Name" required value="${user?.user_metadata?.lastName || ''}">
                                         </div>
                                     </div>
 
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                                         <div>
                                             <label class="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
-                                            <input type="email" name="email" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-red-500 focus:border-red-500 block p-3 outline-none transition" placeholder="john@example.com" required value="${user?.email || ''}" readonly class="cursor-not-allowed opacity-70">
+                                            <input type="email" name="email" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-red-500 focus:border-red-500 block p-3 outline-none transition" placeholder="Enter Email Address" required value="${user?.email || ''}" readonly class="cursor-not-allowed opacity-70">
                                         </div>
                                         <div>
                                             <label class="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
-                                            <input type="tel" name="phone" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-red-500 focus:border-red-500 block p-3 outline-none transition" placeholder="+91 98765 43210" required>
+                                            <input type="tel" name="phone" id="phoneInput" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-red-500 focus:border-red-500 block p-3 outline-none transition" placeholder="Enter Phone Number" required>
+                                            <p id="phone-error" class="text-red-500 text-xs mt-1 hidden">Invalid phone number format</p>
                                         </div>
                                     </div>
 
@@ -128,13 +129,17 @@ export default function Booking() {
                                         </div>
                                         <div>
                                             <label class="block text-sm font-semibold text-gray-700 mb-2">Number of Guests</label>
-                                            <select name="guests" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-red-500 focus:border-red-500 block p-3 outline-none transition">
+                                            <select id="guests" name="guests" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-red-500 focus:border-red-500 block p-3 outline-none transition">
                                                 <option value="1">1 Person</option>
                                                 <option value="2" selected>2 People</option>
                                                 <option value="3">3 People</option>
                                                 <option value="4">4 People</option>
-                                                <option value="5">5+ People</option>
+                                                <option value="custom">5+ People</option>
                                             </select>
+                                            <div id="custom-guests-container" class="hidden mt-3">
+                                                <label class="block text-sm font-semibold text-gray-700 mb-2">Enter Number of Guests</label>
+                                                <input type="number" id="customGuests" min="5" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-red-500 focus:border-red-500 block p-3 outline-none transition" placeholder="e.g. 10">
+                                            </div>
                                         </div>
                                     </div>
 
@@ -144,9 +149,14 @@ export default function Booking() {
                                     </div>
 
                                     <div class="border-t border-gray-200 pt-6">
-                                        <button type="submit" id="submit-btn" class="w-full md:w-auto bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-10 rounded-xl shadow-lg transform transition hover:-translate-y-0.5 focus:ring-4 focus:ring-red-300 text-lg flex items-center justify-center">
-                                            Confirm Reservation
-                                            <i class="fa-solid fa-arrow-right ml-2 opacity-80"></i>
+                                        <div class="mb-4">
+                                            <label class="flex items-center">
+                                                <input type="checkbox" id="terms" class="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500" required>
+                                                <span class="ml-2 text-sm text-gray-600">I agree to the <a href="#" class="text-red-500 hover:underline">Terms & Conditions</a></span>
+                                            </label>
+                                        </div>
+                                        <button type="submit" id="submit-btn" class="w-full bg-red-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-red-700 transition transform hover:-translate-y-0.5 flex items-center justify-center">
+                                            Confirm Booking <i class="fa-solid fa-check ml-2"></i>
                                         </button>
                                         <p class="mt-4 text-sm text-gray-400 text-center md:text-left">
                                             <i class="fa-solid fa-lock mr-1"></i> Secure booking powered by TripTick
@@ -167,28 +177,61 @@ export default function Booking() {
             dateInput.setAttribute('min', today);
         }
 
+        // Phone Validation Logic
+        const phoneInput = document.getElementById('phoneInput');
+        const phoneError = document.getElementById('phone-error');
+
+        if (phoneInput && phoneError) {
+            phoneInput.addEventListener('input', () => {
+                // Allow +, -, space, (, ), and digits. Must have at least 10 digits.
+                const phoneRegex = /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\./0-9]*$/;
+                const digitsOnly = phoneInput.value.replace(/\D/g, '');
+
+                if ((!phoneRegex.test(phoneInput.value) || digitsOnly.length < 10) && phoneInput.value !== '') {
+                    phoneError.classList.remove('hidden');
+                    phoneInput.classList.add('border-red-500', 'focus:ring-red-500');
+                    phoneInput.classList.remove('border-gray-300', 'focus:ring-blue-500');
+                } else {
+                    phoneError.classList.add('hidden');
+                    phoneInput.classList.remove('border-red-500', 'focus:ring-red-500');
+                    phoneInput.classList.add('border-gray-300');
+                }
+            });
+        }
+
         // Price Calculation Logic
-        const guestsSelect = document.querySelector('select[name="guests"]');
+        const guestsSelect = document.getElementById('guests');
         const totalPriceEl = document.getElementById('total-price-display');
-        const basePriceStr = trip.price.replace(/[^0-9.]/g, ''); // Remove currency symbols
-        const basePrice = parseFloat(basePriceStr) || 0;
+        const basePrice = parseFloat(trip.price.replace(/[^0-9.-]+/g, "")); // Remove currency symbols
+
+        // Initialize custom input outside
+        const customGuestsInput = document.getElementById('customGuests');
+        const customGuestsContainer = document.getElementById('custom-guests-container');
 
         function updateTotalPrice() {
-            const guests = parseInt(guestsSelect.value) || 1;
+            let guests = 1;
+            if (guestsSelect.value === 'custom') {
+                if (customGuestsContainer) customGuestsContainer.classList.remove('hidden');
+                if (customGuestsInput) guests = parseInt(customGuestsInput.value) || 0;
+            } else {
+                if (customGuestsContainer) customGuestsContainer.classList.add('hidden');
+                guests = parseInt(guestsSelect.value) || 1;
+            }
+
             const total = basePrice * guests;
-            // Format back to currency (assuming input was like $1200, we keep '$')
-            // For now, let's just use the same format as input if possible, or simple USD/INR
+
             const currencySymbol = trip.price.includes('₹') ? '₹' : '$';
             if (totalPriceEl) {
                 totalPriceEl.textContent = `${currencySymbol}${total.toLocaleString()}`;
             }
-            return total; // Return for use in submission
+            return total;
         }
 
         // Initialize Price
         if (guestsSelect && totalPriceEl) {
             updateTotalPrice();
             guestsSelect.addEventListener('change', updateTotalPrice);
+            if (customGuestsInput) customGuestsInput.addEventListener('input', updateTotalPrice);
         }
 
         // Toggle Payment Details Visibility
@@ -244,7 +287,17 @@ export default function Booking() {
                 await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second showing success
             }
 
-            const guests = parseInt(formData.get('guests'));
+            let guests = parseInt(guestsSelect.value);
+            if (guestsSelect.value === 'custom') {
+                guests = parseInt(customGuestsInput.value) || 0;
+            }
+
+            if (guests <= 0) {
+                showToast('Please enter a valid number of guests.', 'error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                return;
+            }
             const calculatedTotal = basePrice * guests;
             const currencySymbol = trip.price.includes('₹') ? '₹' : '$';
             const finalPriceString = `${currencySymbol}${calculatedTotal.toLocaleString()}`;

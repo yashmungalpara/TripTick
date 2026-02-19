@@ -45,8 +45,14 @@ export default function Login() {
                             <i class="fas fa-lock text-gray-400 text-lg group-focus-within:text-blue-500 transition-colors"></i>
                         </div>
                         <input type="password" id="login-password" placeholder="Password" class="w-full py-4 pl-8 pr-10 border-b border-gray-200 text-gray-900 font-extrabold tracking-widest placeholder-gray-400 focus:outline-none focus:border-blue-600 transition-colors bg-transparent" required />
-                         <button type="button" class="absolute inset-y-0 right-0 flex items-center text-gray-400 hover:text-gray-600 text-xs font-semibold hover:text-blue-600">
-                            Forgot?
+                        <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 flex items-center text-gray-400 hover:text-gray-600">
+                            <i class="far fa-eye-slash"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="text-right pt-2">
+                        <button type="button" class="text-xs font-semibold text-gray-400 hover:text-blue-600 transition">
+                            Forgot Password?
                         </button>
                     </div>
 
@@ -106,6 +112,16 @@ export default function Login() {
             const emailInput = document.getElementById('login-email');
             const passwordInput = document.getElementById('login-password');
             const btn = document.getElementById('login-btn');
+
+            // Password Toggle (Login)
+            const toggleBtn = document.getElementById('toggle-password');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function () {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    this.innerHTML = type === 'password' ? '<i class="far fa-eye-slash"></i>' : '<i class="far fa-eye"></i>';
+                });
+            }
 
             if (form) {
                 form.addEventListener('submit', async (e) => {

@@ -85,15 +85,7 @@ export default function PopularTrips() {
                     </p>
                 </div>
                 
-                <!-- Navigation Buttons (Visual Only) -->
-                <div class="hidden md:flex space-x-3">
-                     <button class="w-12 h-12 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all">
-                        <i class="fa-solid fa-arrow-left"></i>
-                    </button>
-                    <button class="w-12 h-12 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all">
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </button>
-                </div>
+                <!-- Navigation Buttons Removed as per request -->
             </div>
 
             <!-- Horizontal Scroll Container -->

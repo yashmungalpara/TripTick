@@ -297,10 +297,32 @@ export default function Discover({ limit = null, showFilters = true } = {}) {
 
         window.allTrips = trips;
 
-        // Initial Render
-        const initialCategory = window.searchCategory || 'All';
-        window.filterDiscover(initialCategory);
-        window.searchCategory = null;
+        // Populate Trie for Searching
+        import('../utils/SearchAlgorithm.js').then(({ default: searchEngine }) => {
+            searchEngine.clear(); // Clear old data to avoid duplicates on re-render
+            trips.forEach(trip => {
+                // Index keys: Title, Country, Location
+                searchEngine.insert(trip.title, trip);
+                searchEngine.insert(trip.country, trip);
+                // Split location into words for better matching? For now, full location string prefix
+                searchEngine.insert(trip.location, trip);
+            });
+
+            // Check URL for search query
+            const hashParams = new URLSearchParams(window.location.hash.split('?')[1]);
+            const searchQuery = hashParams.get('search');
+
+            if (searchQuery) {
+                const results = searchEngine.search(searchQuery);
+                window.allTrips = results; // Override for display
+                // If results are empty, UI will handle it in filterDiscover
+            }
+
+            // Initial Render
+            const initialCategory = window.searchCategory || 'All';
+            window.filterDiscover(initialCategory);
+            window.searchCategory = null;
+        });
     }
 
     // Trigger load
